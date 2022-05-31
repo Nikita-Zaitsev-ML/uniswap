@@ -329,7 +329,7 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
       actionIcon={<ArrowDownward />}
       slider={{
         defaultValue: initialState.slippage,
-        min: 0,
+        min: 5,
         max: 50,
         marks: createFilledArray(50 / 5, (undefinedValue, index) => {
           const minMark = 5;
