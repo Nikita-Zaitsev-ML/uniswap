@@ -296,12 +296,12 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
     commissionHint = `комиссия: ${new BigNumber(tokenOut.value)
       .minus(new BigNumber(tokenIn.value).times(proportion.value))
       .abs()
-      .toFixed(tokenOut.decimals)} ${tokenOut.name}`;
+      .toFixed(tokenOut.decimals)} `;
     slippageHint = `минимально получите: ${calculateMinOut({
       amountOut: tokenOut.value,
       slippage,
       decimals: tokenOut.decimals,
-    })}`;
+    })} ${tokenOut.name}`;
   }
 
   return (
