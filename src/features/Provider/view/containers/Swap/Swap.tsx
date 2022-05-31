@@ -296,7 +296,7 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
     commissionHint = `комиссия: ${new BigNumber(tokenOut.value)
       .minus(new BigNumber(tokenIn.value).times(proportion.value))
       .abs()
-      .toFixed(tokenOut.decimals)} `;
+      .toFixed(tokenOut.decimals)} ${tokenOut.name}`;
     slippageHint = `минимально получите: ${calculateMinOut({
       amountOut: tokenOut.value,
       slippage,
