@@ -331,9 +331,10 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
         defaultValue: initialState.slippage,
         min: 0,
         max: 50,
-        marks: createFilledArray(50 / 5 + 1, (undefinedValue, index) => {
+        marks: createFilledArray(50 / 5, (undefinedValue, index) => {
+          const minMark = 5;
           const step = 50 / 10;
-          const value = index * step;
+          const value = minMark + index * step;
 
           const mark = { value, label: `${value}` };
 
