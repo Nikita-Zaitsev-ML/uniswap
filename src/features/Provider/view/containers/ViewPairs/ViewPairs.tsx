@@ -32,11 +32,11 @@ const ViewPairs: FC<Props> = ({ signer, switchBtn }) => {
   );
   const dispatch = useAppDispatch();
 
-  const makeHandleDeleteBtnClick = (pair: Pair) => async () => {
+  const makeHandleDeleteBtnClick = (pair: Pair) => () => {
     if (signer !== null) {
       setIsDisabled(true);
 
-      await dispatch(removeLiquidity({ pair, signer }));
+      dispatch(removeLiquidity({ pair, signer }));
     }
   };
 

@@ -192,7 +192,7 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
     }
   };
 
-  const onSubmit: Parameters<typeof PairForm>['0']['onSubmit'] = async (
+  const onSubmit: Parameters<typeof PairForm>['0']['onSubmit'] = (
     submission
   ) => {
     const { theFirstItem, theSecondItem } = submission;
@@ -217,7 +217,7 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
       setIsDisabled(true);
       setSubmitValue('Идет транзакция');
 
-      await dispatch(
+      dispatch(
         addLiquidity({
           tokenInAddress,
           tokenInValue: parseUnits(tokenInValue, tokenInDecimals),

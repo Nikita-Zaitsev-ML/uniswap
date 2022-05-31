@@ -249,7 +249,7 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
     }
   };
 
-  const onSubmit: Parameters<typeof PairForm>['0']['onSubmit'] = async (
+  const onSubmit: Parameters<typeof PairForm>['0']['onSubmit'] = (
     submission
   ) => {
     const areOptionsValid = provider !== null && signer !== null;
@@ -259,7 +259,7 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
       const tokenInValue = submission.theFirstItemValue;
       const tokenOutValue = submission.theSecondItemValue;
 
-      await dispatch(
+      dispatch(
         swapIn({
           tokenInAddress: tokenIn.address,
           tokenInValue: parseUnits(tokenInValue, tokenIn.decimals),
