@@ -25,7 +25,7 @@ const MaskedDecimalField: FC<Props> = ({
     }
 
     const decimals = value.split('.')[1]?.length || 0;
-    const maxDecimals = max.split('.')[1]?.length;
+    const maxDecimals = max.split('.')[1]?.length || 0;
 
     const isAllowed =
       max !== undefined &&
