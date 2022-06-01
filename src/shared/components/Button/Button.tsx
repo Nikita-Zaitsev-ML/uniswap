@@ -2,13 +2,19 @@ import { forwardRef, PropsWithChildren } from 'react';
 import {
   Button as MUIButton,
   ButtonProps as MUIButtonProps,
+  useTheme,
 } from '@mui/material';
 
-type Props = MUIButtonProps & {};
+import { createStyles } from './Button.styles';
+
+type Props = MUIButtonProps & { rounded?: boolean };
 
 const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
-  ({ ...MUIProps }, ref) => {
-    return <MUIButton {...MUIProps} ref={ref} />;
+  ({ rounded, ...MUIProps }, ref) => {
+    const theme = useTheme();
+    const styles = createStyles({ rounded }, theme);
+
+    return <MUIButton css={styles.root()} {...MUIProps} ref={ref} />;
   }
 );
 

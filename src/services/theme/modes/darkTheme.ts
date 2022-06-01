@@ -9,6 +9,7 @@ const darkTheme = createTheme(sharedDarkTheme, sharedThemeOptions, {
     primary: {
       contrastText: '#ffffff',
     },
+    secondary: { main: '#2172e5', dark: '#1966d4', contrastText: '#ffffff' },
     background: { paper: '#191b1f' },
   },
 });

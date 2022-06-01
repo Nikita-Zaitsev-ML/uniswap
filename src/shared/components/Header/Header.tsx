@@ -20,8 +20,8 @@ type Props = MUIHeaderProps & {
 
 const Header: FC<Props> = ({
   navigation = { items: defaultNavigationItems },
-  logo,
-  settings,
+  logo = undefined,
+  settings = undefined,
   ...MUIProps
 }) => {
   const theme = useTheme();
@@ -29,7 +29,7 @@ const Header: FC<Props> = ({
 
   return (
     <MUIHeader css={styles.root()} {...MUIProps}>
-      <MUIToolbar css={styles.toolbar()}>
+      <MUIToolbar css={styles.toolbar()} disableGutters variant="dense">
         <Box css={styles.logo()}>
           <Link href="/" color="inherit">
             {logo}

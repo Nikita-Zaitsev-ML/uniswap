@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 
-import { connectMetaMask } from 'src/shared/api/blockchain/utils';
 import { isError } from 'src/shared/types/guards';
+import { connectMetaMask } from 'src/shared/api/blockchain/utils';
 
 let connection: {
   provider: ethers.providers.Web3Provider;
@@ -32,8 +32,7 @@ const useAuth = () => {
         const address = await connection.signer.getAddress();
 
         const balance = await connection.provider.getBalance(address);
-        const formattedBalance = `${ethers.utils.formatEther(balance)}`;
-
+        const formattedBalance = ethers.utils.formatEther(balance);
         user = { address, balance: formattedBalance };
 
         rerender();

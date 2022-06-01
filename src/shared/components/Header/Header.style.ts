@@ -9,7 +9,18 @@ const createStyles = (props: {}, theme: Theme) => ({
     box-shadow: ${theme.shadows[0]};
   `,
   toolbar: () => css`
+    display: grid;
+    grid: 'logo settings' auto / 1fr auto;
     justify-content: space-between;
+    padding: ${theme.spacing(16)};
+    color: ${theme.palette.text.primary};
+    background: ${theme.palette.background.default};
+
+    @media print, screen and (min-width: ${theme.breakpoints.values.md}px) {
+      grid: 'logo navigation settings' auto / ${theme.spacing(200)} 1fr ${theme.spacing(
+          200
+        )};
+    }
   `,
   logo: () => css`
     flex: 0 1 33.33%;
@@ -30,7 +41,7 @@ const createStyles = (props: {}, theme: Theme) => ({
       }
     `,
   settings: () => css`
-    flex: 0 1 33.33%;
+    flex: 0 1 fit-content;
     display: grid;
     grid-auto-flow: column;
     gap: ${theme.spacing(4)};

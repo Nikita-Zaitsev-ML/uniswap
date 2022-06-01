@@ -22,11 +22,9 @@ const createStyles = (props: Pick<Props, 'header'>, theme: Theme) => ({
     `;
   },
   header: () => {
-    const mobileHeight = 123;
-
     return css`
       grid-area: header;
-      margin-top: max(${mobileHeight}px, ${theme.spacing(150)});
+      margin-top: ${theme.spacing(74)};
     `;
   },
   content: () => {

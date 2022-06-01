@@ -35,6 +35,9 @@ declare module '@mui/material/styles/createPalette' {
     midnight: CSSProperties['color'];
     linkWater: CSSProperties['color'];
   }
+  interface TypeBackground {
+    paperLight: CSSProperties['color'];
+  }
 }
 
 const sharedThemeOptions: ThemeOptions = {
