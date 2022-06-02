@@ -40,14 +40,26 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
   const [submitValue, setSubmitValue] =
     useState<SubmitButtonValue>('Подключите кошелек');
 
+  const resetState = ({ withOptionValues = false } = {}) => {
+    if (withOptionValues) {
+      setOptionValues(initialState.optionValues);
+    }
+
+    setTokenValues([
+      { ...initialState.tokenValue },
+      { ...initialState.tokenValue },
+    ]);
+    setTokensMax(initialState.tokensMax);
+    setProportion(initialState.proportion);
+  };
+
   const { data, status, shouldUpdateData } = useAppSelector(selectProvider);
   const { tokens, pairs } = data;
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (viewType === 'remove') {
-      setTokensMax(initialState.tokensMax);
-      setProportion(initialState.proportion);
+      resetState();
 
       if (isAuth) {
         setSubmitValue('Выберите токены');
@@ -167,12 +179,7 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
         setTokensMax(tokensMaxToSet);
       }
     } else {
-      setProportion(initialState.proportion);
-      setTokenValues([
-        { ...initialState.tokenValue },
-        { ...initialState.tokenValue },
-      ]);
-      setTokensMax(initialState.tokensMax);
+      resetState();
     }
   };
 
@@ -267,13 +274,8 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
         setSubmitValue('Выберите токены');
       });
 
-      setOptionValues([...initialState.optionValues]);
+      resetState({ withOptionValues: true });
       setSubmitValue('Идет транзакция...');
-      setTokenValues([
-        { ...initialState.tokenValue },
-        { ...initialState.tokenValue },
-      ]);
-      setTokensMax(initialState.tokensMax);
     }
   };
 

@@ -47,9 +47,21 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
   const [submitValue, setSubmitValue] =
     useState<SubmitButtonValue>('Подключите кошелек');
 
+  const resetState = ({ withOptionValues = false } = {}) => {
+    if (withOptionValues) {
+      setOptionValues(initialState.optionValues);
+    }
+
+    setTokenValues([
+      { ...initialState.tokenValue },
+      { ...initialState.tokenValue },
+    ]);
+    setTokensMax(initialState.tokensMax);
+    setProportion(initialState.proportion);
+  };
+
   const { data } = useAppSelector(selectProvider);
   const { tokens, pairs, fee } = data;
-
   const dispatch = useAppDispatch();
 
   if (submitValue === 'Подключите кошелек' && isAuth) {
@@ -60,6 +72,7 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
     typeof PairForm
   >['0']['onPairSet'] = ({ pair, isSet }) => {
     setOptionValues([...pair]);
+
     if (isAuth) {
       setSubmitValue(isSet ? 'Укажите количество' : 'Выберите токены');
     } else {
@@ -156,16 +169,7 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
         });
       }
     } else {
-      setProportion(initialState.proportion);
-      setTokenValues(
-        tokenValues.map((token) => {
-          return {
-            ...initialState.tokenValue,
-            value: token.value,
-          };
-        })
-      );
-      setTokensMax(initialState.tokensMax);
+      resetState();
       dispatch(setFeeValue('0'));
     }
   };
@@ -282,13 +286,8 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
         setSubmitValue('Выберите токены');
       });
 
-      setOptionValues([...initialState.optionValues]);
+      resetState({ withOptionValues: true });
       setSubmitValue('Идет транзакция...');
-      setTokenValues([
-        { ...initialState.tokenValue },
-        { ...initialState.tokenValue },
-      ]);
-      setTokensMax(initialState.tokensMax);
     }
   };
 
