@@ -30,7 +30,13 @@ const Header: FC<Props> = ({ user, onAuth }) => {
       const isCurrentPage =
         href === routes.root ? pathname === href : pathname.startsWith(href);
 
-      return { key, children: title, href, isCurrentPage };
+      return {
+        key,
+        'aria-label': item['aria-label'],
+        children: title,
+        href,
+        isCurrentPage,
+      };
     }),
   };
 

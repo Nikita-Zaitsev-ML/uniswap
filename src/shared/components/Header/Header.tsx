@@ -31,7 +31,7 @@ const Header: FC<Props> = ({
     <MUIHeader css={styles.root()} {...MUIProps}>
       <MUIToolbar css={styles.toolbar()} disableGutters variant="dense">
         <Box css={styles.logo()}>
-          <Link href="/" color="inherit">
+          <Link href="/" color="inherit" aria-label="На главную страницу">
             {logo}
           </Link>
         </Box>
