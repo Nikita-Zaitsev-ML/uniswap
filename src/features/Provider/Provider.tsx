@@ -33,37 +33,23 @@ const Provider: FC<Props> = ({ userAddress, provider, signer, view }) => {
   }, [dispatch, provider, userAddress, shouldUpdateData]);
 
   switch (status) {
-    case REQUEST_STATUS.idle: {
-      switch (view) {
-        case 'Pools': {
-          return (
-            <Pools
-              userAddress={userAddress}
-              provider={provider}
-              signer={signer}
-              disabled
-            />
-          );
-        }
-        case 'Swap': {
-          return <Swap provider={provider} signer={signer} disabled />;
-        }
-        default: {
-          return null;
-        }
-      }
-    }
-    case REQUEST_STATUS.pending: {
+    case REQUEST_STATUS.idle:
+    case REQUEST_STATUS.pending:
+    case REQUEST_STATUS.fulfilled: {
+      const isDisabled =
+        status === REQUEST_STATUS.idle || status === REQUEST_STATUS.pending;
+      const shouldDisplayProgress = status === REQUEST_STATUS.pending;
+
       switch (view) {
         case 'Pools': {
           return (
             <>
-              <LinearProgress position="fixed-top" />
+              {shouldDisplayProgress && <LinearProgress position="fixed-top" />}
               <Pools
                 userAddress={userAddress}
                 provider={provider}
                 signer={signer}
-                disabled
+                disabled={isDisabled}
               />
             </>
           );
@@ -71,29 +57,10 @@ const Provider: FC<Props> = ({ userAddress, provider, signer, view }) => {
         case 'Swap': {
           return (
             <>
-              <LinearProgress position="fixed-top" />
-              <Swap provider={provider} signer={signer} disabled />
+              {shouldDisplayProgress && <LinearProgress position="fixed-top" />}
+              <Swap provider={provider} signer={signer} disabled={isDisabled} />
             </>
           );
-        }
-        default: {
-          return null;
-        }
-      }
-    }
-    case REQUEST_STATUS.fulfilled: {
-      switch (view) {
-        case 'Pools': {
-          return (
-            <Pools
-              userAddress={userAddress}
-              provider={provider}
-              signer={signer}
-            />
-          );
-        }
-        case 'Swap': {
-          return <Swap provider={provider} signer={signer} />;
         }
         default: {
           return null;

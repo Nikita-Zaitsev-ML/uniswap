@@ -15,8 +15,10 @@ type State = {
 type Token = {
   address: Address;
   name: string;
+  symbol: string;
   userBalance: string;
   decimals: number;
+  image: string;
 };
 
 type Pair = Omit<Token, 'name'> & {

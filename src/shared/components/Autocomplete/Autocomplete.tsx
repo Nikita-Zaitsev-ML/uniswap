@@ -3,6 +3,8 @@ import {
   Autocomplete as MUIAutocomplete,
 } from '@mui/material';
 
+import { createStyles } from './Autocomplete.styles';
+
 type Props<
   T,
   Multiple extends boolean | undefined,
@@ -18,7 +20,9 @@ const Autocomplete = <
 >({
   ...MUIProps
 }: Props<T, Multiple, DisableClearable, FreeSolo>) => {
-  return <MUIAutocomplete {...MUIProps} />;
+  const styles = createStyles();
+
+  return <MUIAutocomplete css={styles.root()} {...MUIProps} />;
 };
 
 export type { Props };

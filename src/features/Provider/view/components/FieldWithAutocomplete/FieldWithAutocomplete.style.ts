@@ -6,36 +6,43 @@ const createStyles = (theme: Theme) => ({
   root: () => css``,
   adornment: () =>
     css`
-      width: 14em;
+      width: 7rem;
     `,
-  autocomplete: () => css``,
+  autocomplete: () => css`
+    width: 7rem;
+  `,
   option: () => css``,
   optionAvatar: () => css`
     flex: 0 1 35%;
   `,
   optionText: () =>
     css`
-      display: box;
-      box-orient: vertical;
-      line-clamp: 2;
       flex: 0 1 65%;
       margin-left: ${theme.spacing(8)};
-      word-break: break-word;
     `,
-  balance: () => css`
+  caption: () => css`
     display: grid;
-    grid: 'btn value';
+    grid: 'balance' 'max' 'btn' / 100%;
     width: 100%;
     justify-content: space-between;
     cursor: auto;
   `,
-  addBalanceBtn: () => css`
+  addMaxBtn: () => css`
     grid-area: btn;
+    display: box;
+    line-clamp: 1;
+    overflow: hidden;
+    max-width: 7rem;
   `,
-  balanceValue: () => css`
-    grid-area: value;
-    display: inline-flex;
-    align-items: center;
+  captionMax: () => css`
+    grid-area: max;
+  `,
+  captionBalance: () => css`
+    grid-area: balance;
+    display: box;
+    line-clamp: 1;
+    overflow: hidden;
+    max-width: 7rem;
   `,
 });
 

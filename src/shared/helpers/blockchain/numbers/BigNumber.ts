@@ -8,6 +8,7 @@ const decimalPlaces = maxUINT256Digits + precision;
 BigNumber.config({
   DECIMAL_PLACES: decimalPlaces,
   EXPONENTIAL_AT: 1e9,
+  ROUNDING_MODE: BigNumber.ROUND_HALF_DOWN,
 });
 
 export { BigNumber };

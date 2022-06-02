@@ -1,20 +1,22 @@
 import { Token, Pair } from '../types';
 
 type Options = {
-  tokenInName: string;
-  tokenOutName: string;
+  tokenInAddress: string;
+  tokenOutAddress: string;
   tokens: Token[];
   pairs: Pair[];
 };
 
 const getExistedPair = ({
-  tokenInName,
-  tokenOutName,
+  tokenInAddress,
+  tokenOutAddress,
   tokens,
   pairs,
 }: Options) => {
-  const tokenInData = tokens.find((token) => token.name === tokenInName);
-  const tokenOutData = tokens.find((token) => token.name === tokenOutName);
+  const tokenInData = tokens.find(({ address }) => address === tokenInAddress);
+  const tokenOutData = tokens.find(
+    ({ address }) => address === tokenOutAddress
+  );
   const existedPair = pairs.find(
     ({ tokens: [token0, token1] }) =>
       (token0.address === tokenInData?.address &&

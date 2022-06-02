@@ -16,7 +16,7 @@ const DefaultLayout: FC<Props> = ({ children, header }) => {
   return (
     <Box css={styles.root()}>
       {header && <Box css={styles.header()}>{header}</Box>}
-      {children}
+      <Box css={styles.content()}>{children}</Box>
     </Box>
   );
 };

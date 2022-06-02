@@ -20,9 +20,13 @@ import { createStyles } from './FieldWithAutocomplete.style';
 
 type Props = MaskedDecimalFieldProps & {
   options: Item[];
+  optionValue: Item | null;
+  shouldResetOption?: boolean;
   optionText: string;
   value?: string;
   max?: string;
+  balance?: string;
+  isMaxBtnDisplayed?: boolean;
   handleAutocompleteChange: (
     event: SyntheticEvent<Element, Event>,
     value: Item | null,
@@ -33,8 +37,11 @@ type Props = MaskedDecimalFieldProps & {
 
 const FieldWithAutocomplete: FC<Props> = ({
   options,
+  optionValue,
   optionText,
   max = '0',
+  balance = '0',
+  isMaxBtnDisplayed = false,
   disabled = false,
   handleAutocompleteChange,
   handleMaxClick,
@@ -60,27 +67,33 @@ const FieldWithAutocomplete: FC<Props> = ({
             <Autocomplete
               css={styles.autocomplete()}
               options={options}
+              value={optionValue}
               isOptionEqualToValue={(option, value) =>
-                option.name === value.name
+                option.name === value?.name
               }
-              getOptionLabel={(option) => option.name}
+              getOptionLabel={({ symbol }) => symbol}
               renderOption={(props, option) => (
                 <Box css={styles.option()} component="li" {...props}>
                   <Box css={styles.optionAvatar()}>
                     <Avatar
-                      userName={option.name}
+                      src={option.image}
                       alt={`иконка ${optionText}`}
+                      hasImage
                     />
                   </Box>
-                  <Box css={styles.optionText()} component="span">
-                    {option.name}
-                  </Box>
+                  <Typography
+                    css={styles.optionText()}
+                    title={option.name}
+                    noWrap
+                  >
+                    {option.symbol}
+                  </Typography>
                 </Box>
               )}
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label={`Выберите ${optionText}`}
+                  label={`${optionText}`}
                   size="small"
                   fullWidth
                 />
@@ -89,23 +102,36 @@ const FieldWithAutocomplete: FC<Props> = ({
               disabled={disabled}
               onChange={handleAutocompleteChange}
             />
-            <Box css={styles.balance()}>
-              <Button
-                css={styles.addBalanceBtn()}
-                type="button"
-                size="small"
-                onClick={handleMaxClick}
-              >
-                макс
-              </Button>
+            <Box css={styles.caption()}>
               <Typography
-                css={styles.balanceValue()}
-                title={max}
+                css={styles.captionBalance()}
                 variant="caption"
+                title={balance}
                 noWrap
               >
-                {max}
+                Баланс: {balance}
               </Typography>
+              <Typography
+                css={styles.captionMax()}
+                variant="caption"
+                title={max}
+                noWrap
+              >
+                Макс: {max}
+              </Typography>
+              {isMaxBtnDisplayed && (
+                <Button
+                  css={styles.addMaxBtn()}
+                  type="button"
+                  size="small"
+                  color="secondary"
+                  disabled={disabled}
+                  fullWidth
+                  onClick={handleMaxClick}
+                >
+                  макс
+                </Button>
+              )}
             </Box>
           </InputAdornment>
         ),

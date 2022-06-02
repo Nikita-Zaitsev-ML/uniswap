@@ -7,9 +7,10 @@ const createStyles = (theme: Theme) => ({
   hint: () => css`
     display: grid;
     row-gap: ${theme.spacing(4)};
-    color: ${theme.palette.grey['400']};
     word-break: break-word;
   `,
+
+  insufficientAmount: () => css``,
   proportion: () => css``,
   commission: () => css``,
   slippage: () => css``,

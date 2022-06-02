@@ -17,17 +17,22 @@ const getTokens = async ({
   provider,
 }: Options): Promise<Partial<Token>[] | Error> => {
   const result = await Promise.all(
-    contracts.tokens.map(async ({ address }) => {
+    contracts.tokens.map(async ({ address, image }) => {
       const token = await fetchReadFromERC20({
         contractParameters: { address, provider },
-        methods: { name: [], balanceOf: [userAddress], decimals: [] },
+        methods: {
+          name: [],
+          balanceOf: [userAddress],
+          decimals: [],
+          symbol: [],
+        },
       });
 
       if (isError(token)) {
         return token;
       }
 
-      return { ...token, address };
+      return { ...token, address, image };
     })
   );
 
@@ -39,12 +44,14 @@ const getTokens = async ({
 
   return result
     .filter(isNotError)
-    .map(({ address, name, balanceOf, decimals }) => {
+    .map(({ address, name, symbol, balanceOf, decimals, image }) => {
       return {
         address,
+        symbol,
         name,
         decimals,
         userBalance: balanceOf && formatUnits(balanceOf, decimals),
+        image,
       };
     });
 };

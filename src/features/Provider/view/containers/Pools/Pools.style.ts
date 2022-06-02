@@ -6,6 +6,7 @@ const createStyles = () => ({
     display: inline-block;
     word-break: break-word;
   `,
+  insufficientAmount: () => css``,
 });
 
 export { createStyles };

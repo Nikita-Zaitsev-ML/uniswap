@@ -11,6 +11,7 @@ import {
   ArrowDownward,
   Slider,
 } from 'src/shared/components';
+import { BigNumber } from 'src/shared/helpers/blockchain/numbers';
 
 import {
   FieldWithAutocomplete,
@@ -24,19 +25,19 @@ import { createStyles } from './PairForm.style';
 type Props = {
   title: string;
   items: Item[];
-  itemText: string;
+  itemValues: (Item | null)[];
+  itemText?: string;
   hint?: ReactElement;
   actionIcon?: ReactElement;
   values?: string[];
+  balance?: string[];
   max?: string[];
+  maxButtons?: boolean[];
   isMaxSync?: boolean;
   submitValue: string;
   disabled?: boolean;
   isSubmitDisabled?: boolean;
-  onPairSet?: (data: {
-    pair: [{ name: string; value: string }, { name: string; value: string }];
-    isSet: boolean;
-  }) => void;
+  onPairSet?: (data: { pair: (Item | null)[]; isSet: boolean }) => void;
   onValueChange?: (
     event:
       | {
@@ -53,11 +54,14 @@ type Props = {
 const PairForm: FC<Props> = ({
   title,
   items,
-  itemText,
+  itemValues,
+  itemText = 'Токен',
   hint = undefined,
   actionIcon = <ArrowDownward />,
   values = undefined,
+  balance = ['0', '0'],
   max = ['0', '0'],
+  maxButtons = [false, false],
   isMaxSync = false,
   submitValue = 'Отправить',
   disabled = false,
@@ -79,8 +83,10 @@ const PairForm: FC<Props> = ({
     formState: { errors },
   } = useForm<FormState>({
     defaultValues: {
+      theFirstItemKey: '',
       theFirstItem: '',
       theFirstItemValue: '',
+      theSecondItemKey: '',
       theSecondItem: '',
       theSecondItemValue: '',
     },
@@ -104,21 +110,44 @@ const PairForm: FC<Props> = ({
   }, [shouldRerender]);
 
   const [theFirstItemMax, theSecondItemMax] = max;
+  const [theFirstItemBalance, theSecondItemBalance] = balance;
 
   const handleTheFirstItemAutocompleteChange: FieldWithAutocompleteProps['handleAutocompleteChange'] =
     (event, value) => {
-      const name = value?.name || '';
+      if (value === null) {
+        setValue('theFirstItemKey', '');
+        setValue('theFirstItem', '');
 
-      setValue('theFirstItem', name);
+        onPairSet?.({
+          pair: [
+            value,
+            itemValues[1] === null
+              ? null
+              : {
+                  ...itemValues[1],
+                },
+          ],
+          isSet: false,
+        });
+
+        return;
+      }
+
+      setValue('theFirstItemKey', value.key);
+      setValue('theFirstItem', value.name);
       setValue('theFirstItemValue', '');
       setValue('theSecondItemValue', '');
 
       onPairSet?.({
         pair: [
-          { name, value: '' },
-          { name: state.theSecondItem, value: state.theSecondItemValue },
+          { ...value },
+          itemValues[1] === null
+            ? null
+            : {
+                ...itemValues[1],
+              },
         ],
-        isSet: name !== '' && state.theSecondItem !== '',
+        isSet: value.name !== '' && state.theSecondItem !== '',
       });
       setShouldRerender(true);
     };
@@ -140,18 +169,40 @@ const PairForm: FC<Props> = ({
 
   const handleTheSecondItemAutocompleteChange: FieldWithAutocompleteProps['handleAutocompleteChange'] =
     (event, value) => {
-      const name = value?.name || '';
+      if (value === null) {
+        setValue('theSecondItemKey', '');
+        setValue('theSecondItem', '');
 
-      setValue('theSecondItem', name);
+        onPairSet?.({
+          pair: [
+            itemValues[0] === null
+              ? null
+              : {
+                  ...itemValues[0],
+                },
+            value,
+          ],
+          isSet: false,
+        });
+
+        return;
+      }
+
+      setValue('theSecondItemKey', value.key);
+      setValue('theSecondItem', value.name);
       setValue('theFirstItemValue', '');
       setValue('theSecondItemValue', '');
 
       onPairSet?.({
         pair: [
-          { name: state.theFirstItem, value: state.theFirstItemValue },
-          { name, value: '' },
+          itemValues[0] === null
+            ? null
+            : {
+                ...itemValues[0],
+              },
+          { ...value },
         ],
-        isSet: state.theFirstItem !== '' && name !== '',
+        isSet: value.name !== '' && state.theFirstItem !== '',
       });
       setShouldRerender(true);
     };
@@ -183,12 +234,21 @@ const PairForm: FC<Props> = ({
     return handleValueChange;
   };
 
+  const handleRootSubmit: (data: FormState) => void = (data) => {
+    setValue('theFirstItemKey', '');
+    setValue('theFirstItem', '');
+    setValue('theSecondItemKey', '');
+    setValue('theSecondItem', '');
+
+    onSubmit(data);
+  };
+
   return (
     <Card
       css={styles.root()}
       content={{
         children: (
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(handleRootSubmit)}>
             <Box css={styles.header()}>
               <Typography css={styles.title()} component="h3" variant="body1">
                 {title}
@@ -204,9 +264,19 @@ const PairForm: FC<Props> = ({
                 options={items.filter(
                   (item) => item.name !== state.theSecondItem
                 )}
+                optionValue={itemValues[0]}
                 optionText={itemText}
-                value={shouldRerender && state.theFirstItemValue}
-                max={theFirstItemMax}
+                value={
+                  shouldRerender &&
+                  new BigNumber(state.theFirstItemValue)
+                    .decimalPlaces(5)
+                    .toString()
+                }
+                balance={new BigNumber(theFirstItemBalance)
+                  .decimalPlaces(5)
+                  .toString()}
+                max={new BigNumber(theFirstItemMax).decimalPlaces(5).toString()}
+                isMaxBtnDisplayed={maxButtons[0]}
                 inputProps={{
                   ...register('theFirstItemValue'),
                 }}
@@ -230,9 +300,21 @@ const PairForm: FC<Props> = ({
                 options={items.filter(
                   (item) => item.name !== state.theFirstItem
                 )}
+                optionValue={itemValues[1]}
                 optionText={itemText}
-                value={shouldRerender && state.theSecondItemValue}
-                max={theSecondItemMax}
+                value={
+                  shouldRerender &&
+                  new BigNumber(state.theSecondItemValue)
+                    .decimalPlaces(5)
+                    .toString()
+                }
+                balance={new BigNumber(theSecondItemBalance)
+                  .decimalPlaces(5)
+                  .toString()}
+                max={new BigNumber(theSecondItemMax)
+                  .decimalPlaces(5)
+                  .toString()}
+                isMaxBtnDisplayed={maxButtons[1]}
                 inputProps={{
                   ...register('theSecondItemValue'),
                 }}
@@ -252,11 +334,22 @@ const PairForm: FC<Props> = ({
                 handleMaxClick={handleTheSecondItemMaxClick}
               />
               {hint}
-              {slider !== undefined && <Slider {...slider} />}
+              {slider !== undefined && (
+                <Box css={styles.slippage()}>
+                  <Typography css={styles.slippageTitle()}>
+                    Допустимое проскальзывание ?
+                  </Typography>
+                  <Box css={styles.slippageSlider()}>
+                    <Slider {...slider} />
+                  </Box>
+                </Box>
+              )}
               <Button
                 type="submit"
                 variant="contained"
+                color="secondary"
                 disabled={isSubmitDisabled || disabled}
+                rounded
                 fullWidth
               >
                 {submitValue}

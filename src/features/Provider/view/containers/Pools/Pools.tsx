@@ -26,9 +26,12 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
   const styles = createStyles();
 
   const [viewType, setViewType] = useState<ViewType>('add');
-  const [tokenValues, setTokenValues] = useState<string[]>(
-    initialState.tokenValues
-  );
+  const [optionValues, setOptionValues] = useState<
+    Parameters<typeof PairForm>['0']['itemValues']
+  >(initialState.optionValues);
+  const [tokenValues, setTokenValues] = useState<
+    { value: string; userBalance: string }[]
+  >([{ ...initialState.tokenValue }, { ...initialState.tokenValue }]);
   const [proportion, setProportion] = useState<{
     value: string | 'any' | '';
     decimals: number;
@@ -36,7 +39,6 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
   const [tokensMax, setTokensMax] = useState<string[]>(initialState.tokensMax);
   const [submitValue, setSubmitValue] =
     useState<SubmitButtonValue>('Подключите кошелек');
-  const [isDisabled, setIsDisabled] = useState(false);
 
   const { data } = useAppSelector(selectProvider);
   const { tokens, pairs } = data;
@@ -59,11 +61,6 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
     setSubmitValue('Выберите токены');
   }
 
-  const isSubmitDisabled =
-    submitValue === 'Подключите кошелек' ||
-    submitValue === 'Выберите токены' ||
-    isDisabled;
-
   const handleSwitchBtnClick = () => {
     if (viewType === 'add') {
       setViewType('remove');
@@ -75,27 +72,34 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
   const handlePairFormPairSet: Parameters<
     typeof PairForm
   >['0']['onPairSet'] = ({ pair, isSet }) => {
+    setOptionValues([...pair]);
+
     if (isAuth) {
-      setSubmitValue(isSet ? 'Добавить пару' : 'Выберите токены');
+      setSubmitValue(isSet ? 'Добавить ликвидность' : 'Выберите токены');
     } else {
-      setSubmitValue(isSet ? 'Добавить пару' : 'Подключите кошелек');
+      setSubmitValue(isSet ? 'Добавить ликвидность' : 'Подключите кошелек');
     }
 
     const [tokenIn, tokenOut] = pair;
     const { existedPair, tokenInData, tokenOutData } = getExistedPair({
-      tokenInName: tokenIn.name,
-      tokenOutName: tokenOut.name,
+      tokenInAddress: tokenIn?.key || '',
+      tokenOutAddress: tokenOut?.key || '',
       tokens,
       pairs,
     });
 
-    if (existedPair !== undefined) {
+    const arePairTokensDefined =
+      existedPair !== undefined &&
+      tokenInData !== undefined &&
+      tokenOutData !== undefined;
+
+    if (arePairTokensDefined) {
       const {
         tokens: [token0, token1],
       } = existedPair;
 
-      const tokensMaxToSet = pair.map(({ name }, index) => {
-        if (name === '') {
+      const tokensMaxToSet = pair.map((item, index) => {
+        if (item?.name === '') {
           return '0';
         }
 
@@ -125,9 +129,25 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
         return token0MaxToSet;
       });
 
+      const tokenValuesToSet = tokenValues.map((token, index) => {
+        if (index === 1) {
+          return {
+            value: '',
+            userBalance: tokenOutData?.userBalance,
+          };
+        }
+
+        return {
+          value: '',
+          userBalance: tokenInData?.userBalance,
+        };
+      });
+
       const shouldReverse =
         token0.address === tokenOutData?.address &&
         token1.address === tokenInData?.address;
+
+      setTokenValues(tokenValuesToSet);
 
       if (shouldReverse) {
         setProportion({
@@ -138,7 +158,6 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
           decimals: existedPair.decimals,
         });
 
-        setTokenValues(tokenValues.reverse());
         setTokensMax(tokensMaxToSet.reverse());
       } else {
         setProportion({
@@ -149,7 +168,10 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
       }
     } else {
       setProportion(initialState.proportion);
-      setTokenValues(initialState.tokenValues);
+      setTokenValues([
+        { ...initialState.tokenValue },
+        { ...initialState.tokenValue },
+      ]);
       setTokensMax(initialState.tokensMax);
     }
   };
@@ -161,29 +183,41 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
       const { field, value } = event;
 
       if (value === undefined || value === '') {
-        setTokenValues(initialState.tokenValues);
+        setTokenValues(
+          tokenValues.map((token) => {
+            return { ...token, value: '' };
+          })
+        );
 
         return;
       }
+
+      const [tokenIn, tokenOut] = tokenValues;
 
       switch (field) {
         case 'theFirst': {
           const computedValue =
             proportion.value === 'any'
-              ? tokenValues[1]
+              ? tokenOut.value
               : new BigNumber(value).div(proportion.value).toString();
 
-          setTokenValues([value, computedValue]);
+          setTokenValues([
+            { ...tokenIn, value },
+            { ...tokenOut, value: computedValue },
+          ]);
 
           break;
         }
         case 'theSecond': {
           const computedValue =
             proportion.value === 'any'
-              ? tokenValues[0]
+              ? tokenIn.value
               : new BigNumber(value).times(proportion.value).toString();
 
-          setTokenValues([computedValue, value]);
+          setTokenValues([
+            { ...tokenIn, value: computedValue },
+            { ...tokenOut, value },
+          ]);
 
           break;
         }
@@ -195,15 +229,21 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
   const onSubmit: Parameters<typeof PairForm>['0']['onSubmit'] = (
     submission
   ) => {
-    const { theFirstItem, theSecondItem } = submission;
-    const tokenIn = tokens.find((token) => token.name === theFirstItem);
-    const tokenOut = tokens.find((token) => token.name === theSecondItem);
-    const tokenInAddress = tokenIn?.address;
+    const { theFirstItemKey, theSecondItemKey } = submission;
+
+    const { tokenInData, tokenOutData } = getExistedPair({
+      tokenInAddress: theFirstItemKey,
+      tokenOutAddress: theSecondItemKey,
+      tokens,
+      pairs,
+    });
+
+    const tokenInAddress = tokenInData?.address;
     const tokenInValue = submission.theFirstItemValue;
-    const tokenInDecimals = tokenIn?.decimals;
-    const tokenOutAddress = tokenOut?.address;
+    const tokenInDecimals = tokenInData?.decimals;
+    const tokenOutAddress = tokenOutData?.address;
     const tokenOutValue = submission.theSecondItemValue;
-    const tokenOutDecimals = tokenOut?.decimals;
+    const tokenOutDecimals = tokenOutData?.decimals;
 
     const areOptionsValid =
       tokenInAddress !== undefined &&
@@ -214,9 +254,6 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
       signer !== null;
 
     if (areOptionsValid) {
-      setIsDisabled(true);
-      setSubmitValue('Идет транзакция');
-
       dispatch(
         addLiquidity({
           tokenInAddress,
@@ -226,10 +263,27 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
           provider,
           signer,
         })
-      );
+      ).then(() => {
+        setSubmitValue('Выберите токены');
+      });
+
+      setOptionValues([...initialState.optionValues]);
+      setSubmitValue('Идет транзакция...');
+      setTokenValues([
+        { ...initialState.tokenValue },
+        { ...initialState.tokenValue },
+      ]);
+      setTokensMax(initialState.tokensMax);
     }
   };
 
+  const [optionIn, optionOut] = optionValues;
+  const [tokenIn, tokenOut] = tokenValues;
+  const hasTokens = Boolean(optionIn?.name) && Boolean(optionOut?.name);
+  const isInsufficientUserBalance =
+    new BigNumber(tokenIn.userBalance).decimalPlaces(5).lt('0.00001') ||
+    new BigNumber(tokenOut.userBalance).decimalPlaces(5).lt('0.00001');
+  const isSubmitDisabled = submitValue !== 'Добавить ликвидность';
   let hint;
 
   switch (proportion.value) {
@@ -244,9 +298,9 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
       break;
     }
     default: {
-      hint = `пропорция: ${new BigNumber(proportion.value).toFixed(
-        proportion.decimals
-      )}`;
+      hint = `пропорция: ${new BigNumber(proportion.value)
+        .decimalPlaces(5)
+        .toString()}`;
 
       break;
     }
@@ -256,20 +310,38 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
     <PairForm
       title={
         proportion.value === 'any'
-          ? 'Добавить ликвидность с заданием пропорции'
+          ? 'Создать новую пару'
           : 'Добавить ликвидность'
       }
-      hint={<Typography css={styles.hint()}>{hint}</Typography>}
+      hint={
+        <>
+          {hasTokens && isInsufficientUserBalance ? (
+            <Typography css={styles.insufficientAmount()} color="error">
+              Недостаточно средств
+            </Typography>
+          ) : null}
+          <Typography css={styles.hint()} variant="caption">
+            {hint}
+          </Typography>
+        </>
+      }
       actionIcon={<Add />}
       switchBtn={{
         value: 'Мои пары',
         onClick: handleSwitchBtnClick,
       }}
-      items={tokens}
-      itemText={'токен'}
-      values={tokenValues}
+      items={tokens.map(({ address, name, symbol, image }) => ({
+        key: address,
+        name,
+        symbol,
+        image,
+      }))}
+      itemValues={optionValues}
+      values={tokenValues.map(({ value }) => value)}
       onValueChange={onValueChange}
+      balance={[tokenIn.userBalance, tokenOut.userBalance]}
       max={tokensMax}
+      maxButtons={[true, true]}
       isMaxSync={!(proportion.value === 'any' || proportion.value === '')}
       submitValue={submitValue}
       disabled={disabled}

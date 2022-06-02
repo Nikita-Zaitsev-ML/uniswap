@@ -32,9 +32,12 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
   const theme = useTheme();
   const styles = createStyles(theme);
 
+  const [optionValues, setOptionValues] = useState<
+    Parameters<typeof PairForm>['0']['itemValues']
+  >(initialState.optionValues);
   const [tokenValues, setTokenValues] = useState<
     (Token & { value: string; pairBalance: string })[]
-  >([{ ...initialState.tokenValues }, { ...initialState.tokenValues }]);
+  >([{ ...initialState.tokenValue }, { ...initialState.tokenValue }]);
   const [proportion, setProportion] = useState<{
     value: string | 'any' | '';
     decimals: number;
@@ -46,43 +49,27 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
 
   const { data } = useAppSelector(selectProvider);
   const { tokens, pairs, fee } = data;
+
   const dispatch = useAppDispatch();
 
   if (submitValue === 'Подключите кошелек' && isAuth) {
     setSubmitValue('Выберите токены');
   }
 
-  const canSwap = !(
-    new BigNumber(tokenValues['0'].value).eq(0) ||
-    proportion.value === '' ||
-    proportion.value === 'any'
-  );
-  const isSubmitDisabled =
-    !canSwap ||
-    submitValue === 'Подключите кошелек' ||
-    submitValue === 'Выберите токены';
-
-  const handleSlippageChange: Required<
-    Parameters<typeof PairForm>['0']
-  >['slider']['onChangeCommitted'] = (event, value) => {
-    if (typeof value === 'number') {
-      setSlippage(value);
-    }
-  };
-
   const handlePairFormPairSet: Parameters<
     typeof PairForm
   >['0']['onPairSet'] = ({ pair, isSet }) => {
+    setOptionValues([...pair]);
     if (isAuth) {
-      setSubmitValue(isSet ? 'Обменять' : 'Выберите токены');
+      setSubmitValue(isSet ? 'Укажите количество' : 'Выберите токены');
     } else {
-      setSubmitValue(isSet ? 'Обменять' : 'Подключите кошелек');
+      setSubmitValue(isSet ? 'Укажите количество' : 'Подключите кошелек');
     }
 
     const [tokenIn, tokenOut] = pair;
     const { existedPair, tokenInData, tokenOutData } = getExistedPair({
-      tokenInName: tokenIn.name,
-      tokenOutName: tokenOut.name,
+      tokenInAddress: tokenIn?.key || '',
+      tokenOutAddress: tokenOut?.key || '',
       tokens,
       pairs,
     });
@@ -110,8 +97,8 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
         tokenInPairBalance
       ).toString();
 
-      const tokensMaxToSet = pair.map(({ name }, index) => {
-        if (name === '' || existedPair.proportion === 'any') {
+      const tokensMaxToSet = pair.map((item, index) => {
+        if (item?.name === '' || existedPair.proportion === 'any') {
           return '0';
         }
 
@@ -162,7 +149,10 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
       } else {
         setProportion({
           decimals: existedPair.decimals,
-          value: new BigNumber('1').div(existedPair.proportion).toString(),
+          value:
+            existedPair.proportion === 'any'
+              ? 'any'
+              : new BigNumber('1').div(existedPair.proportion).toString(),
         });
       }
     } else {
@@ -170,7 +160,7 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
       setTokenValues(
         tokenValues.map((token) => {
           return {
-            ...initialState.tokenValues,
+            ...initialState.tokenValue,
             value: token.value,
           };
         })
@@ -192,12 +182,17 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
             return { ...token, value: '' };
           })
         );
+        setSubmitValue('Укажите количество');
 
         return;
       }
 
       const [tokenIn, tokenOut] = tokenValues;
       let calculatedValue;
+
+      if (tokenIn.value !== undefined && tokenOut.value !== undefined) {
+        setSubmitValue('Обменять');
+      }
 
       switch (field) {
         case 'theFirst': {
@@ -249,6 +244,14 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
     }
   };
 
+  const handleSlippageChange: Required<
+    Parameters<typeof PairForm>['0']
+  >['slider']['onChangeCommitted'] = (event, value) => {
+    if (typeof value === 'number') {
+      setSlippage(value);
+    }
+  };
+
   const onSubmit: Parameters<typeof PairForm>['0']['onSubmit'] = (
     submission
   ) => {
@@ -275,7 +278,17 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
           provider,
           signer,
         })
-      );
+      ).then(() => {
+        setSubmitValue('Выберите токены');
+      });
+
+      setOptionValues([...initialState.optionValues]);
+      setSubmitValue('Идет транзакция...');
+      setTokenValues([
+        { ...initialState.tokenValue },
+        { ...initialState.tokenValue },
+      ]);
+      setTokensMax(initialState.tokensMax);
     }
   };
 
@@ -284,47 +297,80 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
   let commissionHint;
   let slippageHint;
 
+  const isInvalidValue =
+    new BigNumber(tokenIn.value).eq(0) ||
+    new BigNumber(tokenOut.value).eq(0) ||
+    tokenIn.value === '' ||
+    tokenOut.value === '';
+  const isInsufficientLiquidity = proportion.value === 'any';
+  const isInsufficientUserBalance =
+    new BigNumber(tokenIn.userBalance).decimalPlaces(5).lt('0.00001') ||
+    new BigNumber(tokenOut.userBalance).decimalPlaces(5).lt('0.00001');
+  const canSwap = !(isInvalidValue || isInsufficientLiquidity);
+  const isSubmitDisabled = !canSwap || submitValue !== 'Обменять';
   const hasTokens = tokenIn.name !== '' && tokenOut.name !== '';
   const hasValues = tokenIn.value !== '' && tokenOut.value !== '';
+  const shouldDisplayHints = hasTokens && hasValues;
 
-  if (hasTokens && hasValues) {
+  if (shouldDisplayHints) {
     const swapOutValue = new BigNumber('1')
       .times(proportion.value)
       .toFixed(tokenIn.decimals);
 
-    proportionHint = `1 ${tokenIn.name} = ${swapOutValue} ${tokenOut.name}`;
+    proportionHint = `1 ${tokenIn.name} = ${new BigNumber(swapOutValue)
+      .decimalPlaces(5)
+      .toString()} ${tokenOut.name}`;
     commissionHint = `комиссия: ${new BigNumber(tokenOut.value)
       .minus(new BigNumber(tokenIn.value).times(proportion.value))
       .abs()
-      .toFixed(tokenOut.decimals)} ${tokenOut.name}`;
-    slippageHint = `минимально получите: ${calculateMinOut({
-      amountOut: tokenOut.value,
-      slippage,
-      decimals: tokenOut.decimals,
-    })} ${tokenOut.name}`;
+      .decimalPlaces(5)
+      .toString()} ${tokenOut.name}`;
+    slippageHint = `минимально получите: ${new BigNumber(
+      calculateMinOut({
+        amountOut: tokenOut.value,
+        slippage,
+        decimals: tokenOut.decimals,
+      })
+    )
+      .decimalPlaces(5)
+      .toString()} ${tokenOut.name}`;
   }
 
   return (
     <PairForm
       title={'Обменять'}
       hint={
-        <Box css={styles.hint()}>
-          {proportionHint && (
-            <Typography css={styles.proportion()} variant="caption">
-              {proportionHint}
+        <>
+          {isInsufficientLiquidity ? (
+            <Typography css={styles.insufficientAmount()} color="error">
+              Недостаточно ликвидности
             </Typography>
-          )}
-          {commissionHint && (
-            <Typography css={styles.commission()} variant="caption">
-              {commissionHint}
+          ) : null}
+          {hasTokens && isInsufficientUserBalance ? (
+            <Typography css={styles.insufficientAmount()} color="error">
+              Недостаточно средств
             </Typography>
-          )}
-          {slippageHint && (
-            <Typography css={styles.slippage()} variant="caption">
-              {slippageHint}
-            </Typography>
-          )}
-        </Box>
+          ) : null}
+          {shouldDisplayHints ? (
+            <Box css={styles.hint()}>
+              {proportionHint && (
+                <Typography css={styles.proportion()} variant="caption">
+                  {proportionHint}
+                </Typography>
+              )}
+              {commissionHint && (
+                <Typography css={styles.commission()} variant="caption">
+                  {commissionHint}
+                </Typography>
+              )}
+              {slippageHint && (
+                <Typography css={styles.slippage()} variant="caption">
+                  {slippageHint}
+                </Typography>
+              )}
+            </Box>
+          ) : null}
+        </>
       }
       actionIcon={<ArrowDownward />}
       slider={{
@@ -336,22 +382,29 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
           const step = 50 / 10;
           const value = minMark + index * step;
 
-          const mark = { value, label: `${value}` };
+          const mark = { value, label: `${value}%` };
 
           return mark;
         }),
         valueLabelDisplay: 'auto',
         onChangeCommitted: handleSlippageChange,
       }}
-      items={tokens}
-      itemText={'токен'}
+      items={tokens.map(({ address, name, symbol, image }) => ({
+        key: address,
+        name,
+        symbol,
+        image,
+      }))}
+      itemValues={optionValues}
       values={tokenValues.map(({ value }) => value)}
       onValueChange={onValueChange}
+      balance={[tokenIn.userBalance, tokenOut.userBalance]}
       max={tokensMax}
+      maxButtons={[true, false]}
       isMaxSync
       submitValue={submitValue}
       disabled={disabled}
-      isSubmitDisabled={isSubmitDisabled || disabled}
+      isSubmitDisabled={isSubmitDisabled}
       onPairSet={handlePairFormPairSet}
       onSubmit={onSubmit}
     />

@@ -28,22 +28,12 @@ const createStyles = (props: Pick<Props, 'header'>, theme: Theme) => ({
     `;
   },
   content: () => {
-    const grid = css`
-      grid: auto / auto;
-    `;
-
     return css`
       grid-area: content;
-      display: grid;
+      padding-top: 1em;
       padding-bottom: 1em;
-
-      ${grid}
     `;
   },
-  heading: () => css`
-    grid-area: heading;
-  `,
-  main: () => css``,
 });
 
 export { createStyles };

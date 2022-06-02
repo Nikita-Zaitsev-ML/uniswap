@@ -3,7 +3,8 @@ type ViewType = 'add' | 'remove';
 type SubmitButtonValue =
   | 'Подключите кошелек'
   | 'Выберите токены'
-  | 'Добавить пару'
-  | 'Идет транзакция';
+  | 'Укажите количество'
+  | 'Добавить ликвидность'
+  | 'Идет транзакция...';
 
 export type { ViewType, SubmitButtonValue };
