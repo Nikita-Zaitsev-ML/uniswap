@@ -7,7 +7,7 @@ import { Card } from './Card/Card';
 import { Container } from './Container/Container';
 import { Grid } from './Grid/Grid';
 import { Header } from './Header/Header';
-import { SVGIcon, Add, ArrowDownward } from './Icon';
+import { SVGIcon, Add, ArrowDownward, WifiProtectedSetup } from './Icon';
 import { Img } from './Img/Img';
 import { LazyContainer } from './LazyContainer/LazyContainer';
 import { Link } from './Link/Link';
@@ -30,6 +30,7 @@ export {
   SVGIcon,
   Add,
   ArrowDownward,
+  WifiProtectedSetup,
   Img,
   LazyContainer,
   Link,

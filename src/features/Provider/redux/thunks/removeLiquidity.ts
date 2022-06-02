@@ -2,32 +2,30 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ethers } from 'ethers';
 
 import { fetchWriteToRouter } from 'src/shared/api/blockchain/rinkeby/fetches/writeToRouter';
-import { parseUnits } from 'src/shared/helpers/blockchain/numbers';
+import { Address } from 'src/shared/api/blockchain/types';
 import { isError } from 'src/shared/types/guards';
 
-import { Pair } from '../../types';
-
 type Options = {
-  pair: Pair;
+  token0: Address;
+  token1: Address;
+  amountLP: ethers.BigNumber;
+
   signer: ethers.Signer;
 };
 
 const removeLiquidity = createAsyncThunk(
   'Provider/removeLiquidity',
   async ({
-    pair: { tokens, userBalance, decimals },
+    token0,
+    token1,
+    amountLP,
+
     signer,
   }: Options): Promise<void> => {
-    const [token0, token1] = tokens;
-
     const txRouter = await fetchWriteToRouter({
       contractParameters: { signer },
       methods: {
-        removeLiquidity: [
-          token0.address,
-          token1.address,
-          parseUnits(userBalance, decimals),
-        ],
+        removeLiquidity: [token0, token1, amountLP],
       },
     });
 

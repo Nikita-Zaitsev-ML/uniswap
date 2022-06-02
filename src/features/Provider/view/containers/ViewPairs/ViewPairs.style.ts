@@ -4,7 +4,7 @@ import { Theme } from 'src/shared/styles/theme';
 
 const createStyles = (theme: Theme) => ({
   root: () => css`
-    width: ${theme.spacing(300)};
+    width: ${theme.spacing(400)};
     border-radius: ${theme.spacing(24)};
     background: ${theme.palette.background.paper};
     box-shadow: ${theme.shadows[13]};
@@ -20,7 +20,7 @@ const createStyles = (theme: Theme) => ({
   `,
   pair: () => css`
     display: grid;
-    grid: 'title balance' ' deleteBtn deleteBtn';
+    grid: 'title balance' 'decimalField decimalField' ' deleteBtn deleteBtn';
     gap: ${theme.spacing(8)};
     justify-content: space-between;
     align-items: center;
@@ -33,7 +33,11 @@ const createStyles = (theme: Theme) => ({
   `,
   pairBalance: () => css`
     grid-area: balance;
+    justify-self: right;
     line-height: ${theme.typography.body1.lineHeight};
+  `,
+  pairDecimalField: () => css`
+    grid-area: decimalField;
   `,
   pairDeleteBtn: () => css`
     grid-area: deleteBtn;

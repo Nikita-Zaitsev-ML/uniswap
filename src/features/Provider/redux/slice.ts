@@ -17,7 +17,6 @@ const slice = createSlice({
     builder
       .addCase(getData.pending, (state) => {
         state.status = 'pending';
-        state.data = defaults(initialState.data);
       })
       .addCase(getData.fulfilled, (state, action) => {
         const { payload } = action;

@@ -8,6 +8,7 @@ import {
   Typography,
   Box,
   Button,
+  WifiProtectedSetup,
   ArrowDownward,
   Slider,
 } from 'src/shared/components';
@@ -254,7 +255,12 @@ const PairForm: FC<Props> = ({
                 {title}
               </Typography>
               {switchBtn !== undefined && (
-                <Button variant="text" size="small" onClick={switchBtn.onClick}>
+                <Button
+                  variant="text"
+                  size="small"
+                  endIcon={<WifiProtectedSetup />}
+                  onClick={switchBtn.onClick}
+                >
                   {switchBtn.value}
                 </Button>
               )}
