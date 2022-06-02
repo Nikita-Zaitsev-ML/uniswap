@@ -8,6 +8,7 @@ type Props = Omit<
   Parameters<typeof TextField>['0'],
   'ref' | 'value' | 'defaultValue'
 > & {
+  value?: string | number | null;
   max?: string;
   onValueChange?: ConstructorParameters<
     typeof NumberFormat

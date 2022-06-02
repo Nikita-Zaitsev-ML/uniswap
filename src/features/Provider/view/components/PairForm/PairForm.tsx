@@ -48,7 +48,7 @@ type Props = {
       | undefined
   ) => void;
   onSubmit: (data: FormState) => void;
-  switchBtn?: { value: string; onClick: () => void };
+  switchBtn?: { value: string; disabled?: boolean; onClick: () => void };
   slider?: Parameters<typeof Slider>['0'];
 };
 
@@ -259,6 +259,7 @@ const PairForm: FC<Props> = ({
                   variant="text"
                   size="small"
                   endIcon={<WifiProtectedSetup />}
+                  disabled={switchBtn.disabled}
                   onClick={switchBtn.onClick}
                 >
                   {switchBtn.value}

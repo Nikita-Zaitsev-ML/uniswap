@@ -6,7 +6,7 @@ import { Add, Typography } from 'src/shared/components';
 import { BigNumber, parseUnits } from 'src/shared/helpers/blockchain/numbers';
 
 import { selectProvider, addLiquidity } from '../../../redux/slice';
-import { getExistedPair } from '../../../utils';
+import { getExistedPair, isDisabled } from '../../../utils';
 import { PairForm } from '../../components/PairForm/PairForm';
 import { ViewPairs } from '../ViewPairs/ViewPairs';
 import { ViewType, SubmitButtonValue } from './types';
@@ -40,7 +40,7 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
   const [submitValue, setSubmitValue] =
     useState<SubmitButtonValue>('Подключите кошелек');
 
-  const { data } = useAppSelector(selectProvider);
+  const { data, status, shouldUpdateData } = useAppSelector(selectProvider);
   const { tokens, pairs } = data;
   const dispatch = useAppDispatch();
 
@@ -283,7 +283,9 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
   const isInsufficientUserBalance =
     new BigNumber(tokenIn.userBalance).decimalPlaces(5).lt('0.00001') ||
     new BigNumber(tokenOut.userBalance).decimalPlaces(5).lt('0.00001');
-  const isSubmitDisabled = submitValue !== 'Добавить ликвидность';
+  const isSubmitDisabled =
+    submitValue !== 'Добавить ликвидность' ||
+    isDisabled(status, shouldUpdateData);
   let hint;
 
   switch (proportion.value) {
@@ -328,6 +330,7 @@ const Pools: FC<Props> = ({ userAddress, provider, signer, disabled }) => {
       actionIcon={<Add />}
       switchBtn={{
         value: 'Мои пары',
+        disabled: isDisabled(status, shouldUpdateData),
         onClick: handleSwitchBtnClick,
       }}
       items={tokens.map(({ address, name, symbol, image }) => ({

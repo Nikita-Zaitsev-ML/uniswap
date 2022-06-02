@@ -15,6 +15,7 @@ import { BigNumber, parseUnits } from 'src/shared/helpers/blockchain/numbers';
 
 import { Pair } from '../../../types';
 import { selectProvider, removeLiquidity } from '../../../redux/slice';
+import { isDisabled } from '../../../utils';
 import { createStyles } from './ViewPairs.style';
 import { MaskedDecimalField } from '../../components/MaskedDecimalField/MaskedDecimalField';
 
@@ -35,6 +36,8 @@ const ViewPairs: FC<Props> = ({ signer, switchBtn }) => {
 
   const {
     data: { pairs },
+    status,
+    shouldUpdateData,
   } = useAppSelector(selectProvider);
   const pairsOfUser = pairs.filter((pair) =>
     new BigNumber(pair.userBalance).decimalPlaces(5).gt('0')
@@ -63,7 +66,7 @@ const ViewPairs: FC<Props> = ({ signer, switchBtn }) => {
         })
       );
 
-      setWithdraw({});
+      setWithdraw({ ...withdraw, [pair.address]: '' });
     }
   };
 
@@ -81,6 +84,7 @@ const ViewPairs: FC<Props> = ({ signer, switchBtn }) => {
                 <Button
                   size="small"
                   endIcon={<WifiProtectedSetup />}
+                  disabled={isDisabled(status, shouldUpdateData)}
                   onClick={switchBtn.onClick}
                 >
                   Добавить пару
@@ -112,16 +116,21 @@ const ViewPairs: FC<Props> = ({ signer, switchBtn }) => {
                     </Typography>
                     <MaskedDecimalField
                       css={styles.pairDecimalField()}
+                      value={withdraw[pair.address]}
                       max={new BigNumber(pair.userBalance)
                         .decimalPlaces(5)
                         .toString()}
+                      disabled={isDisabled(status, shouldUpdateData)}
                       onValueChange={makeHandleDecimalFieldChange(pair.address)}
                     />
                     <Button
                       css={styles.pairDeleteBtn()}
                       size="small"
                       color="error"
-                      disabled={!new BigNumber(withdraw[pair.address]).gt('0')}
+                      disabled={
+                        !new BigNumber(withdraw[pair.address]).gt('0') ||
+                        isDisabled(status, shouldUpdateData)
+                      }
                       onClick={makeHandleDeleteBtnClick(pair)}
                     >
                       Вывести
