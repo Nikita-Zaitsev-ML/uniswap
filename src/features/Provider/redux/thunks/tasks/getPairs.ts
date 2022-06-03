@@ -82,8 +82,8 @@ const getPairs = async ({
       let proportion;
 
       if (isProportionUndefined) {
-        formattedBalanceOfToken0 = '';
-        formattedBalanceOfToken1 = '';
+        formattedBalanceOfToken0 = '0';
+        formattedBalanceOfToken1 = '0';
         proportion = 'any';
       } else {
         formattedBalanceOfToken0 = formatUnits(

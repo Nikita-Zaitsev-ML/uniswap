@@ -6,7 +6,7 @@ const initialState = {
     symbol: '',
     value: '',
     userBalance: '0',
-    pairBalance: '',
+    pairBalance: '0',
     decimals: 0,
     image: '',
   },

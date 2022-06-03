@@ -20,6 +20,10 @@ const calculateSwapIn = ({
   fee,
   decimals,
 }: Options) => {
+  if (balanceIn.lte(0)) {
+    return '0';
+  }
+
   const tenBigNumber = new BigNumber(10);
   const amountInBigNumber = new BigNumber(amountIn.toString());
   const balanceInBigNumber = new BigNumber(balanceIn.toString());
@@ -29,6 +33,7 @@ const calculateSwapIn = ({
   const amountInWithFee = amountInBigNumber.times(
     multiplier.minus(fee.amount.toString())
   );
+
   const amountOut = balanceOutBigNumber
     .times(amountInWithFee)
     .div(balanceInBigNumber.times(multiplier).plus(amountInWithFee))

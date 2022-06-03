@@ -212,7 +212,7 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
           });
 
           setTokenValues([
-            { ...tokenIn, value: value || '' },
+            { ...tokenIn, value },
             { ...tokenOut, value: calculatedValue },
           ]);
 
@@ -232,7 +232,7 @@ const Swap: FC<Props> = ({ provider, signer, disabled }) => {
 
           setTokenValues([
             { ...tokenIn, value: calculatedValue },
-            { ...tokenOut, value: value || '' },
+            { ...tokenOut, value },
           ]);
 
           break;
