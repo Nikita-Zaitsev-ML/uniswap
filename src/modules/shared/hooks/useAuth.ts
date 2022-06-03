@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 
-import { isError } from 'src/shared/types/guards';
+import { isError, isErrorLike } from 'src/shared/types/guards';
 import { connectMetaMask } from 'src/shared/api/blockchain/utils';
 
 let connection: {
@@ -28,7 +28,13 @@ const useAuth = () => {
 
   useEffect(() => {
     (async () => {
-      if (connection !== null) {
+      if (isErrorLike(connection)) {
+        setError(connection.message);
+      } else {
+        setError('');
+      }
+
+      if (connection !== null && !isErrorLike(connection)) {
         const address = await connection.signer.getAddress();
 
         const balance = await connection.provider.getBalance(address);
@@ -41,10 +47,6 @@ const useAuth = () => {
   }, [connection]);
 
   const onAuth = async () => {
-    if (connection !== null) {
-      return;
-    }
-
     const metaMaskConnection = await connectMetaMask();
 
     if (isError(metaMaskConnection)) {

@@ -68,7 +68,7 @@ const Provider: FC<Props> = ({ userAddress, provider, signer, view }) => {
       }
     }
     case REQUEST_STATUS.rejected: {
-      return <Typography>{error}</Typography>;
+      return <Typography color="error">{error}</Typography>;
     }
     default: {
       return null;

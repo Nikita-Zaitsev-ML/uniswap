@@ -2,7 +2,7 @@ import { DefaultLayout } from 'src/modules/shared/pageTemplates';
 import { Head, Header } from 'src/modules/shared/components';
 import { Provider as ProviderFeature } from 'src/features/Provider/Provider';
 import type { NextPageWithLayout } from 'src/shared/types';
-import { Box, Container } from 'src/shared/components';
+import { Box, Container, Typography } from 'src/shared/components';
 
 import { useAuth } from '../shared/hooks';
 import { createStyles } from './Home.style';
@@ -27,7 +27,7 @@ const Home: NextPageWithLayout = () => {
                   view={'Swap'}
                 />
               ) : (
-                error
+                <Typography color="error">{error}</Typography>
               )}
             </Box>
           </Box>
