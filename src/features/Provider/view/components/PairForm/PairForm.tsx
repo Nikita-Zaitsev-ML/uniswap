@@ -1,4 +1,4 @@
-import { FC, ReactElement, useEffect, useState } from 'react';
+import { FC, ReactElement } from 'react';
 import { useTheme } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -95,20 +95,12 @@ const PairForm: FC<Props> = ({
   });
   const state = watch();
 
-  // FIXME: this is a crutch to combine the controlled and uncontrolled behavior of NumberFormat - I did not understand how to use NumberFormat validation together with the react-hook-form state
-  const [shouldRerender, setShouldRerender] = useState<undefined | true>();
+  if (values !== undefined) {
+    const [theFirstItemValue, theSecondItemValue] = values;
 
-  useEffect(() => {
-    if (values !== undefined) {
-      setValue('theFirstItemValue', values[0]);
-      setValue('theSecondItemValue', values[1]);
-      setShouldRerender(true);
-    }
-  }, [setValue, values]);
-
-  useEffect(() => {
-    setShouldRerender(undefined);
-  }, [shouldRerender]);
+    state.theFirstItemValue = theFirstItemValue;
+    state.theSecondItemValue = theSecondItemValue;
+  }
 
   const [theFirstItemMax, theSecondItemMax] = max;
   const [theFirstItemBalance, theSecondItemBalance] = balance;
@@ -150,7 +142,6 @@ const PairForm: FC<Props> = ({
         ],
         isSet: value.name !== '' && state.theSecondItem !== '',
       });
-      setShouldRerender(true);
     };
 
   const handleTheFirstItemMaxClick = () => {
@@ -164,8 +155,6 @@ const PairForm: FC<Props> = ({
       value: theFirstItemMax,
       field: 'theFirst',
     });
-
-    setShouldRerender(true);
   };
 
   const handleTheSecondItemAutocompleteChange: FieldWithAutocompleteProps['handleAutocompleteChange'] =
@@ -205,7 +194,6 @@ const PairForm: FC<Props> = ({
         ],
         isSet: value.name !== '' && state.theFirstItem !== '',
       });
-      setShouldRerender(true);
     };
 
   const handleTheSecondItemMaxClick = () => {
@@ -219,15 +207,19 @@ const PairForm: FC<Props> = ({
       value: theFirstItemMax,
       field: 'theFirst',
     });
-
-    setShouldRerender(true);
   };
 
   const makeHandleValueChange = (field: 'theFirst' | 'theSecond') => {
     const handleValueChange: Parameters<
       typeof FieldWithAutocomplete
     >['0']['onValueChange'] = ({ value }, { source }) => {
-      if (source === 'event') {
+      if (source === 'event' && field === 'theFirst') {
+        setValue('theFirstItemValue', value);
+        onValueChange?.({ value, field });
+      }
+
+      if (source === 'event' && field === 'theSecond') {
+        setValue('theSecondItemValue', value);
         onValueChange?.({ value, field });
       }
     };
@@ -273,12 +265,9 @@ const PairForm: FC<Props> = ({
                 )}
                 optionValue={itemValues[0]}
                 optionText={itemText}
-                value={
-                  shouldRerender &&
-                  new BigNumber(state.theFirstItemValue)
-                    .decimalPlaces(5)
-                    .toString()
-                }
+                value={new BigNumber(state.theFirstItemValue)
+                  .decimalPlaces(5)
+                  .toString()}
                 balance={new BigNumber(theFirstItemBalance)
                   .decimalPlaces(5)
                   .toString()}
@@ -286,6 +275,7 @@ const PairForm: FC<Props> = ({
                 isMaxBtnDisplayed={maxButtons[0]}
                 inputProps={{
                   ...register('theFirstItemValue'),
+                  onChange: undefined,
                 }}
                 error={
                   Boolean(errors?.theFirstItem) ||
@@ -309,12 +299,9 @@ const PairForm: FC<Props> = ({
                 )}
                 optionValue={itemValues[1]}
                 optionText={itemText}
-                value={
-                  shouldRerender &&
-                  new BigNumber(state.theSecondItemValue)
-                    .decimalPlaces(5)
-                    .toString()
-                }
+                value={new BigNumber(state.theSecondItemValue)
+                  .decimalPlaces(5)
+                  .toString()}
                 balance={new BigNumber(theSecondItemBalance)
                   .decimalPlaces(5)
                   .toString()}
@@ -324,6 +311,7 @@ const PairForm: FC<Props> = ({
                 isMaxBtnDisplayed={maxButtons[1]}
                 inputProps={{
                   ...register('theSecondItemValue'),
+                  onChange: undefined,
                 }}
                 error={
                   Boolean(errors?.theSecondItem) ||
