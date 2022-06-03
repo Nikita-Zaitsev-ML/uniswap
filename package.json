@@ -81,6 +81,7 @@
     "redux": "^4.1.2",
     "type-fest": "^2.12.2",
     "typescript": "latest",
+    "vanta": "^0.5.22",
     "yup": "^0.32.11"
   },
   "devDependencies": {

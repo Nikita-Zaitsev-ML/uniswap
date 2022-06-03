@@ -64,6 +64,10 @@ class CustomDocument extends Document {
             key="theme-color-dark"
           />
           <meta name="copyright" content="MetaLamp" />
+          <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"
+            defer
+          />
           {/* Inject MUI styles first to match with the prepend: true configuration. */}
           {(this.props as any).emotionStyleTags}
         </DocumentHead>
