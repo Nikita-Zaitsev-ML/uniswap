@@ -204,8 +204,8 @@ const PairForm: FC<Props> = ({
     }
 
     onValueChange?.({
-      value: theFirstItemMax,
-      field: 'theFirst',
+      value: theSecondItemMax,
+      field: 'theSecond',
     });
   };
 
