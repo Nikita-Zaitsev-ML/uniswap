@@ -77,8 +77,8 @@ const PairForm: FC<Props> = ({
   const styles = createStyles(theme);
 
   const {
-    watch,
     setValue,
+    getValues,
     register,
     handleSubmit,
     formState: { errors },
@@ -93,13 +93,13 @@ const PairForm: FC<Props> = ({
     },
     resolver: yupResolver(schema),
   });
-  const state = watch();
+  const state = getValues();
 
   if (values !== undefined) {
     const [theFirstItemValue, theSecondItemValue] = values;
 
-    state.theFirstItemValue = theFirstItemValue;
-    state.theSecondItemValue = theSecondItemValue;
+    setValue('theFirstItemValue', theFirstItemValue);
+    setValue('theSecondItemValue', theSecondItemValue);
   }
 
   const [theFirstItemMax, theSecondItemMax] = max;
@@ -275,7 +275,12 @@ const PairForm: FC<Props> = ({
                 isMaxBtnDisplayed={maxButtons[0]}
                 inputProps={{
                   ...register('theFirstItemValue'),
-                  onChange: undefined,
+                  /*
+                   * onChange: (e) => {
+                   *   // setValue('theFirstItemValue', e.target.value);
+                   *   console.log('f', e.target.value,state);
+                   * },
+                   */
                 }}
                 error={
                   Boolean(errors?.theFirstItem) ||
@@ -311,7 +316,12 @@ const PairForm: FC<Props> = ({
                 isMaxBtnDisplayed={maxButtons[1]}
                 inputProps={{
                   ...register('theSecondItemValue'),
-                  onChange: undefined,
+                  /*
+                   * onChange: (e) => {
+                   *   // setValue('theSecondItemValue', e.target.value);
+                   *   console.log('s', e.target.value);
+                   * },
+                   */
                 }}
                 error={
                   Boolean(errors?.theSecondItem) ||
