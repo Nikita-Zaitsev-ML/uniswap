@@ -1,10 +1,10 @@
 import { ethers } from 'ethers';
 
+import { ethereumNetworks } from '../constants';
+
 declare global {
   interface Window {
-    ethereum:
-      | ethers.providers.ExternalProvider
-      | ethers.providers.JsonRpcFetchFunc;
+    ethereum: any;
   }
 }
 
@@ -13,6 +13,12 @@ const connectMetaMask = async () => {
     window.alert('Пожалуйста, установите MetaMask');
 
     return new Error('ethereum is undefined');
+  }
+
+  if (Number(window.ethereum.networkVersion) !== ethereumNetworks.rinkeby.id) {
+    window.alert('Пожалуйста, Выберите сеть rinkeby');
+
+    return new Error("ethereum network isn't rinkeby");
   }
 
   try {

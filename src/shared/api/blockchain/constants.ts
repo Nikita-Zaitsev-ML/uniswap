@@ -1,3 +1,11 @@
+const ethereumNetworks = {
+  mainnet: { id: 1 },
+  kovan: { id: 42 },
+  ropsten: { id: 3 },
+  rinkeby: { id: 4 },
+  goerli: { id: 5 },
+};
+
 const factoryABI = [
   'event CreatePair(address pair)',
   'event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)',
@@ -78,4 +86,11 @@ const ERC20ABI = [
   'function transferFrom(address from, address to, uint256 amount) returns (bool)',
 ];
 
-export { factoryABI, routerABI, registryABI, feeABI, ERC20ABI };
+export {
+  ethereumNetworks,
+  factoryABI,
+  routerABI,
+  registryABI,
+  feeABI,
+  ERC20ABI,
+};
